@@ -14,10 +14,12 @@ module.exports = function (config) {
             "lib/angular-mocks/angular-mocks.js",
             // With firefox
             "lib/tau/wearable/js/tau.min.js",
-        //    "app/scripts/**/*.js",
+       //     "app/scripts/**/*.js",
             "app/scripts/app.js",
             "app/scripts/services/tizenhttprelay.js",
-            "test/spec/services/tizenhttprelay.js",
+            "app/scripts/services/webapisService.js",
+            "app/scripts/services/androidService.js",
+            "test/spec/services/*.js",
 
         ],
 
