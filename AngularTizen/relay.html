@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html ng-app="TizenHttp">
+<head>
+    <meta name="viewport" content="width=device-width,user-scalable=no"/>
+    <title>Wearable UI</title>
+    <link rel="stylesheet" href="lib/tau/wearable/theme/default/tau.min.css">
+    <link rel="stylesheet" media="all and (-tizen-geometric-shape: circle)"
+          href="lib/tau/wearable/theme/default/tau.circle.min.css">
+    <!-- load theme file for your application -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body ng-controller="MainCtrl as main">
+<div class="ui-page ui-page-active" id="main">
+    <header class="ui-header">
+        <h2 class="ui-title">HelloAccessory Consumer</h2>
+    </header>
+    <div class="ui-content">
+        <button class="ui-btn" ng-click="main.load()">Click me</button>
+
+        <h5><a href="{{main.today.link}}">{{main.today.title}}</a></h5>
+        <div ng-bind-html="main.today.content | unsafe"></div>
+
+        <span class="small">{{main.today.publishedDate}}</span>
+    </div>
+
+    <div id="toast" class="ui-popup ui-popup-toast">
+    </div>
+
+    <script type="text/javascript" src="js/ajaxinterceptor.js"></script>
+
+    <script type="text/javascript" src="lib/angular/angular.js"></script>
+    <script type="text/javascript" src="lib/angular-mocks/angular-mocks.js"></script>
+
+    <!--<script type="text/javascript" src="js/circle-helper.js"></script>-->
+    <script type="text/javascript" src="app/scripts/app.js"></script>
+
+    <script type="text/javascript" src="app/scripts/controllers/main.js"></script>
+    <script type="text/javascript" src="app/scripts/services/androidService.js"></script>
+    <script type="text/javascript" src="app/scripts/services/webapisService.js"></script>
+
+    <script type="text/javascript" src="app/scripts/services/tizenhttprelay.js"></script>
+
+
+    <!-- load javascript file for your application -->
+    <script src="js/main.js"></script>
+</body>
+</html>

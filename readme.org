@@ -1,6 +1,15 @@
 * Various operations for helping Tizen usage with AngularJS
 
-** TODO HTTP relay
+The goal is to hide Tizen specifics under AngularJS modules.
+
+** HTTP Request relaying
+*** TODO Create relaying XMLHttpRequests
+*** TODO Workaround JSONP requests
+
+
+
+** TODO Touch/Button events
+
 ** DONE Android Provider for HTTP relay
 
 ** Compilation 

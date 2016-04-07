@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <application name="HelloAccessoryConsumers" >
+    <application name="TizenHttpRelay" >
         <serviceProfile
-            id="/sample/hello"
-            name="helloaccessory"
+            id="/httprelay/http"
+            name="httprelay"
             role="consumer"
             version="1.0" >
             <supportedTransports>
@@ -11,7 +11,7 @@
                 <transport type="TRANSPORT_WIFI"/>
             </supportedTransports>
             <serviceChannel
-                id="104"
+                id="188"
                 dataRate="low"
                 priority="low"
                 reliability="enable" >

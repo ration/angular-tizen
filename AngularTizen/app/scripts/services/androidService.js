@@ -9,11 +9,8 @@
  */
 angular.module('TizenHttp')
     .service('androidService', ['$log', "$q", "webapisService", function ($log, $q, webapis) {
-
-        var courseChannel = "/scoreit/course";
         var SAAgent = {courseChannel: null};
         var SASocket = {courseChannel: null};
-        var CHANNELID = {courseChannel: 104};
         var promises = {courseChannel: null};
         var connectionPromise = null;
         var receiveCallbacks = {};
@@ -81,7 +78,6 @@ angular.module('TizenHttp')
                         SAAgent[id].setPeerAgentFindListener(peerAgentFindCallback(id));
                         SAAgent[id].findPeerAgents();
                         $log.info("Resolved agent " + agents[i]);
-                       // deferred.resolve("OK");
                     } catch (err) {
                         deferred.reject(err);
                         console.log("exception [" + err.name + "] msg[" + err.message + "]");
@@ -96,6 +92,7 @@ angular.module('TizenHttp')
 
         function connect(id, deferred) {
             if (!webapis.hasWebapis()) {
+                $log.warn("Samsung Webapis were not found. Faking it.")
                 deferred.resolve("OK");
             }
             if (SASocket[id]) {

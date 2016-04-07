@@ -8,40 +8,78 @@
  * Factory in the consumerApp.
  */
 angular.module('TizenHttp')
-  .factory('TizenHttpRelay', function ($log) {
-      return {
-          request: function(config) {
-              $log.debug('Request made with ', config);
-              return config;
-              // If an error, not allowed, or my custom condition,
-              // return $q.reject('Not allowed');
-          },
-          requestError: function(rejection) {
-              $log.debug('Request error due to ', rejection);
-              // Continue to ensure that the next promise chain
-              // sees an error
-              return $q.reject(rejection);
-              // Or handled successfully?
-              // return someValue
-          },
-          response: function(response) {
-              $log.debug('Response from server', response);
-              // Return a promise
-              return response || $q.when(response);
-          },
-          responseError: function(rejection) {
-              $log.debug('Error in response ', rejection);
-              // Continue to ensure that the next promise chain
-              // sees an error
-              // Can check auth status code here if need to
-              // if (rejection.status === 403) {
-              //   Show a login dialog
-              //   return a value to tell controllers it has
-              //   been handled
-              // }
-              // Or return a rejection to continue the
-              // promise failure chain
-              return $q.reject(rejection);
-          }
-      };
-  });
+    .factory('TizenHttpRelay', ['$log', '$injector', '$httpBackend', 'androidService', '$q', '$document',
+        function ($log, $injector, $httpBackend, androidService, $q, $document) {
+            var self = this;
+            self.relay = "js/sample2.json";
+            self.counter = 1;
+            self.relayId = 188;
+            self.connected = false;
+            self.httpService = $injector.get("$http");
+            self.toAndroidApiRequest = function (method, url, data, headers) {
+                var req = "";
+                var parser = document.createElement("a");
+                parser.href = url;
+
+
+                req += method + " " + parser.hostname;
+                $log.debug(req);
+            };
+
+            androidService.listen(self.relayId, function (data) {
+                $log.debug("Got response from android service");
+            });
+            androidService.connect(self.relayId).then(function (response) {
+                $log.info("Service connected " + androidService.isConnected(self.relayId));
+                self.connected = true;
+                $log.info(response);
+            });
+            return {
+                relay: function (method, url, data, callback, headers, timeout, withCredentials) {
+                    self.toAndroidApiRequest(method, url, data, headers);
+                    return;
+                }
+            };
+        }]).factory('$xhrFactory', function () {
+    //  $log.debug("factory replace!");
+    return function createXhr(method, url) {
+        $log.debug("fetching fake");
+        var base = new TizenRelay();
+
+        //return base;
+        return new window.XMLHttpRequest();
+
+    };
+}).config(function ($provide) {
+    $provide.decorator('$httpBackend', function ($delegate, $injector) {
+        var oldHttpBackend = $delegate;
+        var asincDefinitions = [];
+
+
+        var httpBackend = function (method, url, data, callback, headers, timeout, withCredentials) {
+            var httpRelay = $injector.get("TizenHttpRelay");
+            httpRelay.relay(method, url, data, callback, headers, timeout, withCredentials);
+            // TODO Fake the JSONP request, otherwise pass on to our http provider
+            oldHttpBackend(method, url, data, callback, headers, timeout, withCredentials);
+
+
+        }
+        httpBackend.whenAsync = function (method, url, data, headers) {
+            var definition = {method: method, url: url, data: data, headers: headers},
+                chain = {
+                    respond: function (promise, headers, status) {
+                        definition.response = {promise: promise, headers: headers, status: status};
+                        return chain;
+                    }
+                };
+            asincDefinitions.push(definition);
+            return chain;
+        }
+
+        for (var key in oldHttpBackend) {
+            httpBackend[key] = oldHttpBackend[key];
+        }
+        return httpBackend;
+
+    })
+});
