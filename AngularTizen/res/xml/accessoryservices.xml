@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <application name="TizenHttpRelay" >
+    <application name="HttpTizenProvider" >
         <serviceProfile
             id="/httprelay/http"
             name="httprelay"

@@ -12,8 +12,12 @@ import java.net.UnknownHostException;
 
 public class WebRequestRelay {
 
+
+
     public byte[] httpRequest(byte[] data) throws InvalidRequestException {
         try {
+            Log.i(HttpProviderService.TAG, "Received data len " + data.length);
+            Log.i(HttpProviderService.TAG, new String(data));
             ByteArrayInputStream in = new ByteArrayInputStream(data);
             String address = readLine(in);
             String port = readLine(in);
@@ -57,7 +61,7 @@ public class WebRequestRelay {
 
 
         } catch (IOException e) {
-            Log.e(WebRequestRelay.class.getSimpleName(), "Request sending failed", e);
+            Log.e(HttpProviderService.TAG, "Request sending failed", e);
             throw new InvalidRequestException(e);
         }
 

@@ -3,11 +3,11 @@
 The goal is to hide Tizen specifics under AngularJS modules.
 
 ** HTTP Request relaying
-*** TODO Create relaying XMLHttpRequests
+*** TODO Create relaying  XMLHttpRequests
 *** TODO Workaround JSONP requests
 
 
-
+** TODO Tau hiding
 ** TODO Touch/Button events
 
 ** DONE Android Provider for HTTP relay
@@ -15,7 +15,7 @@ The goal is to hide Tizen specifics under AngularJS modules.
 ** Compilation 
 
 *** TODO Streamline
-
+    
 *** AndroidProvider
 Samsung accessory sdk required: http://developer.samsung.com/gear/develop/sdk#samsung-accessory-sdk: place the accssory-v2.3.0.jar and sdk-v1.0.0.jar under AndroidProvider/libs/
 *** AngularTizen
@@ -24,3 +24,5 @@ Under lib put angular,angular-mocks,tau
 
 
 Licence GPL v3, except if specified otherwise in the file 
+
+

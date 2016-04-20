@@ -7,4 +7,6 @@
 /.tmp
 /.sass-cache
 /bower_components
-
+/.build/
+/.buildResult/
+/.settings/

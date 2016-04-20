@@ -14,7 +14,7 @@ angular.module('TizenHttp')
         var promises = {courseChannel: null};
         var connectionPromise = null;
         var receiveCallbacks = {};
-        var ProviderAppName = "TizenHttpRelay";
+        var ProviderAppName = "HttpTizenProvider";
 
 
         function createHTML(log_string) {
@@ -54,7 +54,7 @@ angular.module('TizenHttp')
                             SAAgent[id].setServiceConnectionListener(agentCallback(id));
                             SAAgent[id].requestServiceConnection(peerAgent);
                         } else {
-                            createHTML("Not expected app!! : " + peerAgent.appName);
+                            createHTML("Not expected app: " + peerAgent.appName + " != " + ProviderAppName);
                         }
                     } catch (err) {
                         console.log("exception [" + err.name + "] msg[" + err.message + "]");
