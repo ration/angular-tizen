@@ -18,7 +18,7 @@ angular.module('TizenHttp')
         self.connect = function() {
             self.relay.connect();
         }
-        
+
         self.fetchRss = function (url) {
 
             return $http.jsonp('//ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=50&callback=JSON_CALLBACK&q=' + encodeURIComponent(url), {
@@ -27,6 +27,14 @@ angular.module('TizenHttp')
 
         }
 
+
+        document.addEventListener('tizenhwkey', function (e) {
+            $log.debug("Got key " + e)
+            if (e.keyName == "back") {
+                tizen.application.getCurrentApplication().exit();
+            }
+        });
+        
         self.load = function () {
             self.fetchRss("http://www.juvenes.fi/tabid/1156/moduleid/3302/RSS.aspx").then(function (response) {
                 $log.debug("got response");
@@ -44,7 +52,7 @@ angular.module('TizenHttp')
                 $log.error("error fetching rss");
                 $log.error(error);
             });
-           
+
 
         }
     }]).filter('unsafe', function ($sce) {

@@ -19,49 +19,32 @@ angular.module('TizenHttp')
             self.httpService = $injector.get("$http");
             self.text = [];
             self.toAndroidApiRequest = function (method, url, data, headers) {
-                var req = "";
-                var parser = document.createElement("a");
-                parser.href = url;
-
                 if (method == "JSONP") {
                     method = "GET";
-                }
-                var host = parser.host +"\n";
 
-                var port = "80";
-                if (parser.port) {
-                    port = ""+parser.port
                 }
-                port += "\n";
-                /*var req = {
-                 method:method,
-                 url:url,
-                 data:data,
-                 headers:headers
-                 };
-                 $log.debug(req);
-                 androidService.fetch(self.relayId,)*/
-                req += host;
-                req += port;
-                req += method + " " + url + " HTTP/1.1\r\n"
-                angular.forEach(headers, function (value, key) {
-                    req += key + ": " + value + "\r\n";
-                });
-                req += "\r\n";
-                if (data) {
-                    req += data;
+                if (url.indexOf("//") == 0) {
+                    url = "http:" + url;
                 }
+                var req = {
+                    method: method,
+                    url: url,
+                    headers: headers
+                };
 
-
-                $log.debug(req);
-                return req;
+                return JSON.stringify(req);
             };
+
+            self.isConnected = function() {
+                return androidService.isConnected(self.relayId);
+            }
 
             androidService.listen(self.relayId, function (data) {
                 $log.debug("Got response from android service");
+
                 $log.debug("data: " + data);
             });
-            self.connect = function() {
+            self.connect = function () {
                 $log.debug("Connecting to backend");
                 androidService.connect(self.relayId).then(function (response) {
                     $log.info("Service connected " + androidService.isConnected(self.relayId));
@@ -74,11 +57,15 @@ angular.module('TizenHttp')
             }
             return {
                 text: self.text,
+                isConnected: function () {
+                    return self.isConnected();
+                },
                 connect: function () {
                     self.connect();
                 },
                 relay: function (method, url, data, headers) {
                     var data = self.toAndroidApiRequest(method, url, data, headers);
+                    $log.debug("sending " + data);
                     return androidService.fetch(self.relayId, self.relayChannel, data);
                 },
                 convertToRawHttpRequest: function (method, url, data, headers) {
@@ -116,7 +103,7 @@ angular.module('TizenHttp')
             var tizenRelay = $injector.get("TizenHttpRelay");
 
             var args = [].slice.call(arguments);
-        //    args[0] = [new Date().toString(), ': ', args[0]].join('');
+            //    args[0] = [new Date().toString(), ': ', args[0]].join('');
             tizenRelay.addText(args);
             // Send on our enhanced message to the original debug method.
             origDebug.apply(null, args)
@@ -171,16 +158,34 @@ angular.module('TizenHttp')
              }
              */
             if (method == "JSONP") {
-                var req = tizenRelay.relay(method, url, data, headers).then(function (response) {
-                    $log.debug("Got response!");
-                    $log.debug(response);
-                }, function (error) {
-                    $log.debug("got error");
-                    $log.error(error);
-                })
-                $log.debug(req);
-                //} else {
-                oldHttpBackend(method, url, data, callback, headers, timeout, withCredentials);
+                //if (tizenRelay.isConnected()) {
+                    var req = tizenRelay.relay(method, url, data, headers).then(function (response) {
+                        $log.debug("Got response!");
+                        $log.debug(response);
+
+                        var respJSON = JSON.parse(response);
+
+
+                        var f = new Function("JSON_CALLBACK", respJSON.response);
+                        var responseData = null;
+                        f(function (json) {
+                            return responseData = json.responseData;
+                        })
+                        var reply = {
+                            responseData: responseData
+                        }
+                        callback(200,reply,headers,null)
+
+                    }, function (error) {
+                        $log.debug("got error");
+                        $log.error(error);
+                    })
+                    $log.debug(req);
+                    //} else {
+               /* } else {
+                    $log.debug("Not connecting, falling back to basic");
+                    oldHttpBackend(method, url, data, callback, headers, timeout, withCredentials);
+                }*/
             }
             function matchRequest() {
                 var matches = asincDefinitions
