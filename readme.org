@@ -9,6 +9,8 @@ The goal is to hide Tizen specifics under AngularJS modules.
 ** Sample GET
 
 
+#+NAME: Tizen<->Android JSON
+#+BEGIN_SRC
 // GET
 {
     "method":"GET"
@@ -24,6 +26,7 @@ The goal is to hide Tizen specifics under AngularJS modules.
 {
    response = "data.."
 }
+#+END_SRC
 
 *** TODO Create relaying  XMLHttpRequests
 *** TODO Workaround JSONP requests

@@ -41,21 +41,21 @@ The goal is to hide Tizen specifics under AngularJS modules.
 
 ## Sample GET<a id="sec-1-2" name="sec-1-2"></a>
 
-// GET
-{
-    "method":"GET"
-    headers = [
-        "foo":"bar"
-    ]
-    url = "<http://url>"
-    data = ""
-}
-
-->
-
-{
-   response = "data.."
-}
+    // GET
+    {
+        "method":"GET"
+        headers = [
+            "foo":"bar"
+        ]
+        url = "http://url"
+        data = ""
+    }
+    
+    ->
+    
+    {
+       response = "data.."
+    }
 
 ### TODO Create relaying  XMLHttpRequests<a id="sec-1-2-1" name="sec-1-2-1"></a>
 
