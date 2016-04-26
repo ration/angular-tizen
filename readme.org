@@ -3,7 +3,28 @@
 The goal is to hide Tizen specifics under AngularJS modules.
 
 ** HTTP Request relaying
+
 *** TODO Change request sending to Volley or some other sensible method
+
+** Sample GET
+
+
+// GET
+{
+    "method":"GET"
+    headers = [
+        "foo":"bar"
+    ]
+    url = "http://url"
+    data = ""
+}
+
+->
+
+{
+   response = "data.."
+}
+
 *** TODO Create relaying  XMLHttpRequests
 *** TODO Workaround JSONP requests
 

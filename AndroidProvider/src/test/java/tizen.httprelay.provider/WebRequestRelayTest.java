@@ -9,13 +9,13 @@ import com.android.volley.ResponseDelivery;
 import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HurlStack;
+import com.google.common.util.concurrent.SettableFuture;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -31,7 +31,6 @@ import java.util.concurrent.Executors;
 public class WebRequestRelayTest {
 
     private WebRequestRelay relay;
-    private JSONObject reply = new JSONObject();
 
     @Before
     public void setup() {
@@ -50,12 +49,12 @@ public class WebRequestRelayTest {
             }
 
             @Override
-            public void onError(String string) {
+            public void onError(JSONObject error) {
                 signal.countDown();
             }
         };
         String url = "http://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=50&callback=JSON_CALLBACK&q=http%3A%2F%2Fwww.juvenes.fi%2Ftabid%2F1156%2Fmoduleid%2F3302%2FRSS.aspx";
-        relay.httpRequest(url, Collections.EMPTY_MAP, cb);
+        relay.httpRequest(url, Collections.EMPTY_MAP, Collections.EMPTY_MAP, cb);
         signal.await();
     }
 
@@ -66,28 +65,41 @@ public class WebRequestRelayTest {
         JSONObject obj = new JSONObject();
         obj.put("method", "GET");
         obj.put("url", url);
-
-        final CountDownLatch signal = new CountDownLatch(1);
-        VolleyCallback cb = new VolleyCallback() {
-            @Override
-            public void onSuccess(JSONObject ans) {
-                signal.countDown();
-                reply = ans;
-            }
-
-            @Override
-            public void onError(String string) {
-                signal.countDown();
-            }
-        };
-
-        relay.jsonRequest(obj, cb);
-        signal.await();
-        Assert.assertTrue(reply.has("response"));
+        JSONObject jsonObject = doRequestAndWait(obj);
+        Assert.assertTrue(jsonObject.has("response"));
     }
 
 
-    public static RequestQueue newRequestQueueForTest(final Context context) {
+    @Test(timeout = 10000)
+    public void testPOST() throws JSONException, InvalidRequestException, InterruptedException, ExecutionException {
+        String req = "{\"method\":\"POST\",\"url\":\"http://koti.kapsi.fi/~talahtel/json/echo.cgi\",\"headers\":{\"Accept\":\"application/json, text/plain, */*\"}}";
+        JSONObject obj = new JSONObject(req);
+        JSONObject replyObject = doRequestAndWait(obj);
+
+        Assert.assertTrue(replyObject.has("response"));
+        Assert.assertTrue(replyObject.get("code").equals(200));
+        Assert.assertTrue(replyObject.has("headers"));
+    }
+
+    private JSONObject doRequestAndWait(JSONObject request) throws InterruptedException, InvalidRequestException, ExecutionException {
+        final SettableFuture<JSONObject> reply = SettableFuture.create();
+        VolleyCallback cb = new VolleyCallback() {
+            @Override
+            public void onSuccess(JSONObject ans) {
+                reply.set(ans);
+            }
+
+            @Override
+            public void onError(JSONObject err) {
+                reply.set(err);
+            }
+        };
+
+        relay.jsonRequest(request, cb);
+        return reply.get();
+    }
+
+    private static RequestQueue newRequestQueueForTest(final Context context) {
         final File cacheDir = new File(context.getCacheDir(), "volley");
 
         final Network network = new BasicNetwork(new HurlStack());
@@ -105,5 +117,6 @@ public class WebRequestRelayTest {
 
         return queue;
     }
+
 
 }

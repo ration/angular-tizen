@@ -12,9 +12,12 @@
 <body ng-controller="MainCtrl as main">
 <div class="ui-page ui-page-active" id="main">
     <header class="ui-header">
-        <h2 class="ui-title">HelloAccessory Consumer</h2>
+        <h2 class="ui-title">Juvenes Sara</h2>
     </header>
     <div class="ui-content">
+        <button class="ui-btn" ng-click="main.sample()">Sample get</button>
+        <button class="ui-btn" ng-click="main.samplePOST()">Sample POST</button>
+
         <button class="ui-btn" ng-click="main.load()">Click me</button>
         <button class="ui-btn" ng-click="main.connect()">Connect</button>
 
@@ -22,8 +25,10 @@
         <div ng-bind-html="main.today.content | unsafe"></div>
 
         <span class="small">{{main.today.publishedDate}}</span>
+        <div id="getblock">{{main.getData}}</div>
+        <div id="postBlocl">{{main.postData}}</div>
         <div>
-            <ul id="debuglog" class="ui-listview ui-virtuallistview" ng-repeat="line in main.relay.text">
+            <ul id="debuglog" class="ui-virtuallistview debuglog" ng-repeat="line in main.relay.text">
                 <li class="line"
                     ng-bind="line"></li>
             </ul>
@@ -51,7 +56,6 @@
     <script type="text/javascript" src="app/scripts/controllers/main.js"></script>
     <script type="text/javascript" src="app/scripts/services/androidService.js"></script>
     <script type="text/javascript" src="app/scripts/services/webapisService.js"></script>
-
     <script type="text/javascript" src="app/scripts/services/tizenhttprelay.js"></script>
 
 

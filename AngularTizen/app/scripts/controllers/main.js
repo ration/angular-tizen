@@ -8,15 +8,50 @@
  * Controller of the angularTizenApp
  */
 angular.module('TizenHttp')
-    .controller('MainCtrl', ['$http', '$log', 'TizenHttpRelay', '$xhrFactory', function ($http, $log, TizenHttpRelay, $xhrFactory) {
+    .controller('MainCtrl', ['$http', '$log', function ($http, $log) {
         var self = this;
         self.data = "hello";
         self.feeds = [];
         self.today = null;
+        self.counter = 1;
 
-        self.relay = TizenHttpRelay;
-        self.connect = function() {
+        self.getData = "GET DATA";
+        self.postData = "POST DATA";
+        self.connect = function () {
             self.relay.connect();
+        }
+
+        self.sample = function () {
+            var url = "http://koti.kapsi.fi/~talahtel/json/sample.json"
+            $http({
+                method:'GET',
+                url: url,
+            //    headers: [{"Access-Control-Allow-Origin": "*"}]
+
+            }).then(function (response) {
+                self.getData = response.data.data;
+            }, function (error) {
+                $log.error(error);
+            })
+        }
+
+        self.samplePOST = function () {
+            var url = "http://koti.kapsi.fi/~talahtel/json/echo.cgi"
+
+            var req = {
+                method: 'POST',
+                url: url,
+                headers: {
+                    'Content-Type': undefined
+                },
+                data: { test: 'should echo ' +(self.counter++) }
+            }
+
+            $http(req).then(function (response) {
+                self.postData = response.data.test;
+            }, function (error) {
+                $log.error(error);
+            })
         }
 
         self.fetchRss = function (url) {
@@ -34,7 +69,7 @@ angular.module('TizenHttp')
                 tizen.application.getCurrentApplication().exit();
             }
         });
-        
+
         self.load = function () {
             self.fetchRss("http://www.juvenes.fi/tabid/1156/moduleid/3302/RSS.aspx").then(function (response) {
                 $log.debug("got response");

@@ -21,7 +21,6 @@ angular.module('TizenHttp')
             self.toAndroidApiRequest = function (method, url, data, headers) {
                 if (method == "JSONP") {
                     method = "GET";
-
                 }
                 if (url.indexOf("//") == 0) {
                     url = "http:" + url;
@@ -35,7 +34,7 @@ angular.module('TizenHttp')
                 return JSON.stringify(req);
             };
 
-            self.isConnected = function() {
+            self.isConnected = function () {
                 return androidService.isConnected(self.relayId);
             }
 
@@ -79,7 +78,7 @@ angular.module('TizenHttp')
     ).factory('$xhrFactory', function () {
     //  $log.debug("factory replace!");
     return function createXhr(method, url) {
-        $log.debug("fetching fake");
+       // $log.debug("fetching fake");
         var base = new TizenRelay();
 
         //return base;
@@ -94,39 +93,30 @@ angular.module('TizenHttp')
         var origInfo = $delegate.info;
         var origError = $delegate.error;
 
+        var addLogToText = function (arg) {
+            var tizenRelay = $injector.get("TizenHttpRelay");
+
+            var args = [].slice.call(arg);
+            //    args[0] = [new Date().toString(), ': ', args[0]].join('');
+            tizenRelay.addText(args);
+            return args;
+        }
+
         /*
          * Intercept the call to $log.debug() so we can add on
          * our enhancement. We're going to add on a date and
          * time stamp to the message that will be logged.
          */
         $delegate.debug = function () {
-            var tizenRelay = $injector.get("TizenHttpRelay");
-
-            var args = [].slice.call(arguments);
-            //    args[0] = [new Date().toString(), ': ', args[0]].join('');
-            tizenRelay.addText(args);
-            // Send on our enhanced message to the original debug method.
-            origDebug.apply(null, args)
+            origDebug.apply(null, addLogToText(arguments));
         };
 
         $delegate.info = function () {
-            var tizenRelay = $injector.get("TizenHttpRelay");
-
-            var args = [].slice.call(arguments);
-            //    args[0] = [new Date().toString(), ': ', args[0]].join('');
-            tizenRelay.addText(args);
-            // Send on our enhanced message to the original debug method.
-            origInfo.apply(null, args)
+            origInfo.apply(null, addLogToText(arguments));
         };
 
         $delegate.error = function () {
-            var tizenRelay = $injector.get("TizenHttpRelay");
-
-            var args = [].slice.call(arguments);
-            //    args[0] = [new Date().toString(), ': ', args[0]].join('');
-            tizenRelay.addText(args);
-            // Send on our enhanced message to the original debug method.
-            origError.apply(null, args)
+            origInfo(null, addLogToText(arguments));
         };
         return $delegate;
     }]);
@@ -139,64 +129,32 @@ angular.module('TizenHttp')
 
         var httpBackend = function (method, url, data, callback, headers, timeout, withCredentials) {
             var tizenRelay = $injector.get("TizenHttpRelay");
-
-            /*
-             var match = matchRequest()
-             if (match) {
-             $log.debug("Match");
-             match.response.promise
-             //promise resolution: success
-             .then(function (promiseResolvedObject) {
-
-             callback(200, promiseResolvedObject, match.response.headers, match.response.status)
-             })
-             //promise.resolution: fail
-             .then(null, function (error) {
-             callback(404, error, match.response.headers, match.response.status)
-             })
-
-             }
-             */
             if (method == "JSONP") {
                 //if (tizenRelay.isConnected()) {
-                    var req = tizenRelay.relay(method, url, data, headers).then(function (response) {
-                        $log.debug("Got response!");
-                        $log.debug(response);
+                var req = tizenRelay.relay(method, url, data, headers).then(function (response) {
+                    $log.debug("Got response!");
+                    $log.debug(response);
 
-                        var respJSON = JSON.parse(response);
-
-
-                        var f = new Function("JSON_CALLBACK", respJSON.response);
-                        var responseData = null;
-                        f(function (json) {
-                            return responseData = json.responseData;
-                        })
-                        var reply = {
-                            responseData: responseData
-                        }
-                        callback(200,reply,headers,null)
-
-                    }, function (error) {
-                        $log.debug("got error");
-                        $log.error(error);
+                    var respJSON = JSON.parse(response);
+                    var f = new Function("JSON_CALLBACK", respJSON.response);
+                    var responseData = null;
+                    f(function (json) {
+                        return responseData = json.responseData;
                     })
-                    $log.debug(req);
-                    //} else {
-               /* } else {
-                    $log.debug("Not connecting, falling back to basic");
-                    oldHttpBackend(method, url, data, callback, headers, timeout, withCredentials);
-                }*/
-            }
-            function matchRequest() {
-                var matches = asincDefinitions
-                    .filter(function (definition) {
-                        return (definition.url === url) ? true : false
-                    })
-                    .filter(function (definition) {
-                        return (definition.method === method) ? true : false
-                    })
+                    var reply = {
+                        responseData: responseData
+                    }
+                    callback(200, reply, headers, null)
 
-                return matches.length ? matches[0] : false;
+                }, function (error) {
+                    $log.debug("got error");
+                    $log.error(error);
+                })
+                $log.debug(req);
+            } else {
+                $log.debug("Converted:");
+                $log.debug(tizenRelay.convertToRawHttpRequest(method,url,data,headers));
+                oldHttpBackend(method, url, data, callback, headers, timeout, withCredentials);
             }
 
         }
