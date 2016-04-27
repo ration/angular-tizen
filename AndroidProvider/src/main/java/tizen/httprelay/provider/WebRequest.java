@@ -16,13 +16,13 @@ import java.util.Map;
 class WebRequest extends Request<JSONObject> {
 
     private final Map<String, String> headers;
-    private Map<String, String> params;
+    private final String data;
     private final Response.Listener<JSONObject> mListener;
 
-    public WebRequest(Map<String, String> headers, Map<String, String> params, int method, String url, Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
+    public WebRequest(Map<String, String> headers, String data, int method, String url, Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
         super(method, url, errorListener);
         this.headers = headers;
-        this.params = params;
+        this.data = data;
         mListener = listener;
 
     }
@@ -37,11 +37,11 @@ class WebRequest extends Request<JSONObject> {
 
 
     @Override
-    protected Map<String, String> getParams() throws AuthFailureError {
-        if (!params.isEmpty()) {
-            return params;
+    public byte[] getBody() throws AuthFailureError {
+        if (this.data != null)  {
+            return data.getBytes();
         }
-        return super.getParams();
+        return super.getBody();
     }
 
     @Override

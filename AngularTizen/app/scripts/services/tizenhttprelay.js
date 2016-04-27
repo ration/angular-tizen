@@ -3,8 +3,6 @@
 var angularTizenModule = angular.module('AngularTizen', []);
 
 function TizenHttpRelay($log, $injector, androidService, $document, autoConnect) {
-
-
     var self = this;
     self.relay = "js/sample2.json";
     self.counter = 1;
@@ -16,6 +14,7 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
     self.autoConnect = autoConnect;
     $log.debug("Autoconnect is set to " + self.autoConnect);
 
+
     self.toAndroidApiRequest = function (method, url, data, headers) {
         if (method == "JSONP") {
             method = "GET";
@@ -26,7 +25,8 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
         var req = {
             method: method,
             url: url,
-            headers: headers
+            headers: headers,
+            data: data,
         };
 
         return JSON.stringify(req);
@@ -52,6 +52,11 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
             $log.error(response);
         });
     }
+
+    if (self.autoConnect) {
+        self.connect();
+    }
+
     return {
 
         isConnected: function () {
@@ -72,19 +77,14 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
 }
 
 angularTizenModule.provider('TizenHttpRelay', function TizenHttpRelayProvider() {
-
     var auto = false;
-
     this.autoConnect = function (value) {
         auto = !!value;
     };
-
-    this.$get = ['$log', '$injector', 'androidService', '$q', '$document',function ($log, $injector, androidService, $document) {
+    this.$get = ['$log', '$injector', 'androidService', '$q', '$document', function ($log, $injector, androidService, $document) {
         console.log("using provider with value " + auto);
         return new TizenHttpRelay($log, $injector, androidService, $document, auto);
     }];
-
-
 }).factory('TizenLogHelper', [function () {
         self.text = [];
 
@@ -96,16 +96,16 @@ angularTizenModule.provider('TizenHttpRelay', function TizenHttpRelayProvider() 
         }
     }])
     .factory('$xhrFactory', function () {
-    //  $log.debug("factory replace!");
-    return function createXhr(method, url) {
-        // $log.debug("fetching fake");
-        var base = new TizenRelay();
+        //  $log.debug("factory replace!");
+        return function createXhr(method, url) {
+            // $log.debug("fetching fake");
+            var base = new TizenRelay();
 
-        //return base;
-        return new window.XMLHttpRequest();
+            //return base;
+            return new window.XMLHttpRequest();
 
-    };
-}).config(function ($provide) {
+        };
+    }).config(function ($provide) {
 
     $provide.decorator('$log', ['$delegate', '$injector', function ($delegate, $injector) {
         // Keep track of the original debug method, we'll need it later.
@@ -146,22 +146,29 @@ angularTizenModule.provider('TizenHttpRelay', function TizenHttpRelayProvider() 
 
         var httpBackend = function (method, url, data, callback, headers, timeout, withCredentials) {
             var tizenRelay = $injector.get("TizenHttpRelay");
-            if (method == "JSONP") {
-                //if (tizenRelay.isConnected()) {
+            if (tizenRelay.isConnected()) {
                 var req = tizenRelay.relay(method, url, data, headers).then(function (response) {
                     $log.debug("Got response!");
                     $log.debug(response);
-
                     var respJSON = JSON.parse(response);
-                    var f = new Function("JSON_CALLBACK", respJSON.response);
-                    var responseData = null;
-                    f(function (json) {
-                        return responseData = json.responseData;
-                    })
-                    var reply = {
-                        responseData: responseData
+                    if (method == "JSONP") {
+
+                        var f = new Function("JSON_CALLBACK", respJSON.response);
+                        var responseData = null;
+                        f(function (json) {
+                            return responseData = json.responseData;
+                        });
+                        var reply = {
+                            responseData: responseData
+                        };
+                        callback(200, reply, headers, null);
+                    } else {
+                        // Assuming everything is json...
+                        var reply = {
+                            responseData: JSON.parse(respJSON.response)
+                        };
+                        callback(200, reply, headers, null);
                     }
-                    callback(200, reply, headers, null)
 
                 }, function (error) {
                     $log.debug("got error");
@@ -194,6 +201,7 @@ angularTizenModule.provider('TizenHttpRelay', function TizenHttpRelayProvider() 
         return httpBackend;
 
     })
+}).run(function (TizenHttpRelay) { /* eagerly load   relay */
 });
 
 

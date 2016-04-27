@@ -43,7 +43,8 @@ angular.module('TizenHttp')
                 method: 'POST',
                 url: url,
                 headers: {
-                    'Content-Type': undefined
+                    'Content-Type': undefined,
+                    'Accept-Language': 'Finnish'
                 },
                 data: { test: 'should echo ' +(self.counter++) }
             }

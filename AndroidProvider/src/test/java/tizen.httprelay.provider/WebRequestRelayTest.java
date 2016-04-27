@@ -4,6 +4,7 @@ package tizen.httprelay.provider;
 import android.content.Context;
 import com.android.volley.ExecutorDelivery;
 import com.android.volley.Network;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.ResponseDelivery;
 import com.android.volley.toolbox.BasicNetwork;
@@ -22,6 +23,7 @@ import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -54,7 +56,7 @@ public class WebRequestRelayTest {
             }
         };
         String url = "http://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=50&callback=JSON_CALLBACK&q=http%3A%2F%2Fwww.juvenes.fi%2Ftabid%2F1156%2Fmoduleid%2F3302%2FRSS.aspx";
-        relay.httpRequest(url, Collections.EMPTY_MAP, Collections.EMPTY_MAP, cb);
+        relay.httpRequest(Request.Method.GET, url, Collections.EMPTY_MAP, null, cb);
         signal.await();
     }
 
@@ -79,6 +81,21 @@ public class WebRequestRelayTest {
         Assert.assertTrue(replyObject.has("response"));
         Assert.assertTrue(replyObject.get("code").equals(200));
         Assert.assertTrue(replyObject.has("headers"));
+    }
+
+    @Test(timeout = 10000)
+    public void testPOSTwithHeaders() throws JSONException, InterruptedException, ExecutionException, InvalidRequestException {
+        String req = "{\"method\":\"POST\",\"url\":\"http://koti.kapsi.fi/~talahtel/json/echo.cgi\",\"headers\":{\"Accept-Language\":\"Finnish\",\"Accept\":\"application/json, text/plain, */*\"},\"data\":\"{\\\"test\\\":\\\"should echo 1\\\"}\"}";
+
+        JSONObject obj = new JSONObject(req);
+        JSONObject replyObject = doRequestAndWait(obj);
+
+        Assert.assertTrue(replyObject.has("response"));
+        Assert.assertTrue(replyObject.get("code").equals(200));
+        Assert.assertTrue(replyObject.has("headers"));
+        TreeMap<String, String> headers = (TreeMap<String, String>) replyObject.get("headers");
+        Assert.assertEquals("Magic", headers.get("Custom-Token"));
+        Assert.assertEquals("Finnish", headers.get("Accept-Lang"));
     }
 
     private JSONObject doRequestAndWait(JSONObject request) throws InterruptedException, InvalidRequestException, ExecutionException {
