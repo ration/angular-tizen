@@ -8,7 +8,7 @@
  * Controller of the angularTizenApp
  */
 angular.module('TizenHttp')
-    .controller('MainCtrl', ['$http', '$log', function ($http, $log) {
+    .controller('MainCtrl', ['$http', '$log','TizenLogHelper', function ($http, $log,TizenLogHelper) {
         var self = this;
         self.data = "hello";
         self.feeds = [];
@@ -17,6 +17,7 @@ angular.module('TizenHttp')
 
         self.getData = "GET DATA";
         self.postData = "POST DATA";
+        self.loghelper = TizenLogHelper;
         self.connect = function () {
             self.relay.connect();
         }

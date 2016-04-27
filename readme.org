@@ -2,9 +2,18 @@
 
 The goal is to hide Tizen specifics under AngularJS modules.
 
+** TODO TizenHttpRelay factory configuration
+
+*** Single/autoconnect, keep-alive?
+
+
+** TODO Create proper sample project
+
 ** HTTP Request relaying
 
-*** TODO Change request sending to Volley or some other sensible method
+***
+*** DONE Change request sending to Volley or some other sensible method
+
 
 ** Sample GET
 

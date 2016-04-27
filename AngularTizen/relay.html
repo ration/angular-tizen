@@ -28,7 +28,7 @@
         <div id="getblock">{{main.getData}}</div>
         <div id="postBlocl">{{main.postData}}</div>
         <div>
-            <ul id="debuglog" class="ui-virtuallistview debuglog" ng-repeat="line in main.relay.text">
+            <ul id="debuglog" class="ui-virtuallistview debuglog" ng-repeat="line in main.loghelper.text">
                 <li class="line"
                     ng-bind="line"></li>
             </ul>
