@@ -8,12 +8,14 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
     self.counter = 1;
     self.relayId = "/httprelay/http";
     self.relayChannel = 188;
-    self.connected = false;
+    self._connected = false;
     self.httpService = $injector.get("$http");
+    self.callbacks = {};
 
     self.autoConnect = autoConnect;
     $log.debug("Autoconnect is set to " + self.autoConnect);
 
+    self.connectionListenerName = "connectors";
 
     self.toAndroidApiRequest = function (method, url, data, headers) {
         if (method == "JSONP") {
@@ -34,7 +36,13 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
 
     self.isConnected = function () {
         return androidService.isConnected(self.relayId);
-    }
+    };
+
+    self.onConnectedChange = function (state) {
+        angular.forEach(self.callbacks[self.connectionListenerName], function(cb) {
+            cb(state);
+        });
+    };
 
     androidService.listen(self.relayId, function (data) {
         $log.debug("Got response from android service");
@@ -45,20 +53,21 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
         $log.debug("Connecting to backend");
         androidService.connect(self.relayId).then(function (response) {
             $log.info("Service connected " + androidService.isConnected(self.relayId));
+            //self._connected = true;
             self.connected = true;
             $log.info(response);
         }, function (response) {
             $log.error("Received error from android service");
             $log.error(response);
         });
-    }
+    };
 
     if (self.autoConnect) {
         self.connect();
     }
 
     return {
-
+        _connected: self._connected,
         isConnected: function () {
             return self.isConnected();
         },
@@ -72,9 +81,33 @@ function TizenHttpRelay($log, $injector, androidService, $document, autoConnect)
         },
         convertToRawHttpRequest: function (method, url, data, headers) {
             return self.toAndroidApiRequest(method, url, data, headers);
+        },
+        addConnectionListener: function (handler) {
+            if (self.connectionListenerName in self.callbacks) {
+                self.callbacks[self.connectionListenerName].push(handler);
+            }
+            else {
+                self.callbacks[self.connectionListenerName] = [handler];
+            }
         }
     };
 }
+
+
+Object.defineProperty(TizenHttpRelay.prototype,
+    "connected", {
+        get: function () {
+            return this.isConnected();
+        },
+        set: function (newValue) {
+            this._connected = newValue;
+
+            //Call method on update
+            this.onConnectedChange(this._connected);
+        },
+        enumerable: true,
+        configurable: false
+    });
 
 angularTizenModule.provider('TizenHttpRelay', function TizenHttpRelayProvider() {
     var auto = false;
@@ -163,11 +196,8 @@ angularTizenModule.provider('TizenHttpRelay', function TizenHttpRelayProvider() 
                         };
                         callback(200, reply, headers, null);
                     } else {
-                        // Assuming everything is json...
-                        var reply = {
-                            responseData: JSON.parse(respJSON.response)
-                        };
-                        callback(200, reply, headers, null);
+                        var body = JSON.parse(respJSON.response);
+                        callback(200, body, respJSON.headers, null);
                     }
 
                 }, function (error) {
