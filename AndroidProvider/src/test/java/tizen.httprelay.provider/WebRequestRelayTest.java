@@ -72,16 +72,16 @@ public class WebRequestRelayTest {
     }
 
 
-    @Test(timeout = 10000)
-    public void testPOST() throws JSONException, InvalidRequestException, InterruptedException, ExecutionException {
-        String req = "{\"method\":\"POST\",\"url\":\"http://koti.kapsi.fi/~talahtel/json/echo.cgi\",\"headers\":{\"Accept\":\"application/json, text/plain, */*\"}}";
-        JSONObject obj = new JSONObject(req);
-        JSONObject replyObject = doRequestAndWait(obj);
-
-        Assert.assertTrue(replyObject.has("response"));
-        Assert.assertTrue(replyObject.get("code").equals(200));
-        Assert.assertTrue(replyObject.has("headers"));
-    }
+//    @Test(timeout = 10000)
+//    public void testPOST() throws JSONException, InvalidRequestException, InterruptedException, ExecutionException {
+//        String req = "{\"method\":\"POST\",\"url\":\"http://koti.kapsi.fi/~talahtel/json/echo.cgi\",\"headers\":{\"Accept\":\"application/json, text/plain, */*\"}}";
+//        JSONObject obj = new JSONObject(req);
+//        JSONObject replyObject = doRequestAndWait(obj);
+//
+//        Assert.assertTrue(replyObject.has("response"));
+//        Assert.assertTrue(replyObject.get("code").equals(200));
+//        Assert.assertTrue(replyObject.has("headers"));
+//    }
 
     @Test(timeout = 10000)
     public void testPOSTwithHeaders() throws JSONException, InterruptedException, ExecutionException, InvalidRequestException {
